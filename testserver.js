@@ -102,9 +102,14 @@ function res_index (req, res) {
     res.write("HTTP port: " + port + '<br>\n');
     res.write("HTTPS port: " + port_ssl + '<br>\n');
     res.write("<br>\nLinks:<br>\n");
-    Object.keys(recmapp).forEach(function(lnk) {
-        res.write("<a href=\"" + lnk+ "\">" + lnk + "</a><br>\n");
-    });
+    for (var key in recmapp) {
+        if (recmapp.hasOwnProperty(key)) {
+            var val = recmapp[key];
+            var lnk = key;
+            var desc = val[1];
+            res.write("<a href=\"" + lnk+ "\">" + lnk + " - " + desc + "</a><br>\n");
+        }
+    }
     res.end("\n");
 }
 
@@ -125,22 +130,28 @@ function res_status (req, res) {
 }
 
 recmapp = {
-    '/' : res_index,
+    '/' : [ res_index ],
 };
 
 // following functions are automatically mounted to / ( without res prefix )
 var autoreg = [
-    res_index, // normalindex page
-    res_empty, // returns empty page immediatly
-    res_custom, // customizable rc code
-    res_data, // prints random data if size param is specified
-    res_drop, // connection is dropped immediatly after receiving request to this page
-    res_rand_status, // random HTTP status
-    res_log, // prints request details to console
-    res_status, // current server status
+    res_index, null,
+    res_empty, "returns empty page immediatly",
+    res_custom, "customizable rc code",
+    res_data, "prints random data if size param is specified",
+    res_drop, "connection is dropped immediatly after receiving request to this page",
+    res_rand_status, "random HTTP status",
+    res_log, "prints request details to console",
+    res_status, "current server status",
     ];
 
-autoreg.forEach(function(func) { recmapp[ '/' + func.name.substr(4)] = func; } );
+for(var i = 0, l=autoreg.length; i < l; i+=2)
+{
+    var func = autoreg[i];
+    var desc = autoreg[i + 1];
+
+    recmapp[ '/' + func.name.substr(4)] = [func, desc];
+}
 
 function reqmapper (req, res) {
     if (log_enabled) {
@@ -149,7 +160,7 @@ function reqmapper (req, res) {
     var url_parts = url.parse(req.url, true);
     handler = recmapp[url_parts.pathname];
     if (handler) {
-        return handler(req, res);
+        return handler[0](req, res);
     } else if (req.url.indexOf('/mu-') == 0) { // mu authorization
         res.writeHead(200, {'Content-Type': 'text/plain'});
         res.end('42');
