@@ -22,6 +22,11 @@ process.on('uncaughtException', function(err) {
     console.log(err);
 });
 
+function generatedhint()
+{
+    return "\nPage generated at: " + new Date().getTime() + "\n";
+}
+
 function request_to_json(req, callback) {
     res = {}
     res['from_ip'] = req.connection.remoteAddress;
@@ -140,7 +145,10 @@ function res_index (req, res) {
 function res_log (req, res) {
     log_request(req);
     res.writeHead(200, {'Content-Type': 'text/plain'});
-    request_to_json(req, function(req_json) { LAST_LOG_REQUEST = req_json; res.end(); } );
+    request_to_json(req, function(req_json) {
+        LAST_LOG_REQUEST = req_json;
+        res.end(generatedhint());
+        });
 }
 
 function res_empty (req, res) {
@@ -152,6 +160,7 @@ function res_status (req, res) {
     res.writeHead(200, {'Content-Type': 'application/json'});
     jres = {
         "active_connections" : ACTIVE_CONNECTIONS,
+        "timestamp" : new Date().getTime(),
         "last_log_request" : LAST_LOG_REQUEST,
     };
     res.write(JSON.stringify(jres));
