@@ -196,7 +196,8 @@ function reqmapper (req, res) {
         console.log('Request');
     }
     var url_parts = url.parse(req.url, true);
-    handler = recmapp[url_parts.pathname];
+    var baseurl = '/' + url_parts.pathname.split('/')[1];
+    handler = recmapp[baseurl];
     if (handler) {
         return handler[0](req, res);
     } else if (req.url.indexOf('/mu-') == 0) { // mu authorization
