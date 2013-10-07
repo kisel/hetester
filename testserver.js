@@ -13,12 +13,34 @@ var httpconnstat = process.env.HTTP_CONN_STAT;
 var log_enabled = process.env.LOG;
 var key_prefix='cert/server.'
 
+var LAST_LOG_REQUEST = null;
+
 // catch the uncaught errors that weren't wrapped in a domain or try catch statement
 // do not use this in modules, but only in applications, as otherwise we could have multiple of these bound
 process.on('uncaughtException', function(err) {
     // handle the error safely
     console.log(err);
 });
+
+function request_to_json(req, callback) {
+    res = {}
+    res['from_ip'] = req.connection.remoteAddress;
+    res['timestamp'] = new Date().getTime();
+    res['url'] = req.url;
+    res['method'] = req.method;
+    res['headers'] = req.headers;
+
+    if (req.method == 'POST' || req.method == 'PUT') {
+        var buf = "";
+        req.on('data', function (data) { buf += data; });
+        req.on('end', function () {
+            res['data'] = buf;
+            callback(res);
+        });
+    } else {
+        callback(res);
+    }
+}
 
 function log_request (req) {
     console.log("[" + new Date().getTime() + "] got request: " + req.url);
@@ -107,7 +129,9 @@ function res_index (req, res) {
             var val = recmapp[key];
             var lnk = key;
             var desc = val[1];
-            res.write("<a href=\"" + lnk+ "\">" + lnk + " - " + desc + "</a><br>\n");
+            if (!desc)
+                continue;
+            res.write("<a href=\"" + lnk+ "\">" + lnk + "</a>" + " - " + desc + "<br>\n");
         }
     }
     res.end("\n");
@@ -116,7 +140,7 @@ function res_index (req, res) {
 function res_log (req, res) {
     log_request(req);
     res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end();
+    request_to_json(req, function(req_json) { LAST_LOG_REQUEST = req_json; res.end(); } );
 }
 
 function res_empty (req, res) {
@@ -125,8 +149,13 @@ function res_empty (req, res) {
 }
 
 function res_status (req, res) {
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end("Connections: " + ACTIVE_CONNECTIONS);
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    jres = {
+        "active_connections" : ACTIVE_CONNECTIONS,
+        "last_log_request" : LAST_LOG_REQUEST,
+    };
+    res.write(JSON.stringify(jres));
+    res.end();
 }
 
 recmapp = {
@@ -174,9 +203,7 @@ httpserver = http.createServer( reqmapper )
 httpserver.listen(port, '0.0.0.0');
 ACTIVE_CONNECTIONS = 0;
 
-httpserver.on('connection', function(client) {
-    ++ACTIVE_CONNECTIONS;
-    client.setNoDelay();
+httpserver.on('connection', function(client) { ++ACTIVE_CONNECTIONS; client.setNoDelay();
 
     if (log_enabled) {
         console.log('Connected');
