@@ -147,6 +147,7 @@ function res_log (req, res) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
     request_to_json(req, function(req_json) {
         LAST_LOG_REQUEST = req_json;
+        res.write("Request information:\nThis data is also available at  \nhetester.herokuapp.com/status\n\n" + JSON.stringify(req_json) + "\n\n");
         res.end(generatedhint());
         });
 }
@@ -157,14 +158,22 @@ function res_empty (req, res) {
 }
 
 function res_status (req, res) {
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    jres = {
-        "active_connections" : ACTIVE_CONNECTIONS,
-        "timestamp" : new Date().getTime(),
-        "last_log_request" : LAST_LOG_REQUEST,
-    };
-    res.write(JSON.stringify(jres));
-    res.end();
+    var url_parts = url.parse(req.url, true);
+    var baseurl = '/' + url_parts.pathname.split('/')[1];
+    if ('/status/data' == url_parts.pathname) {
+        res.writeHead(200, {'Content-Type': 'text/plain'});
+        data = LAST_LOG_REQUEST && LAST_LOG_REQUEST['data'] || "";
+        res.end(data);
+    } else {
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        jres = {
+            "active_connections" : ACTIVE_CONNECTIONS,
+            "timestamp" : new Date().getTime(),
+            "last_log_request" : LAST_LOG_REQUEST,
+        };
+        res.write(JSON.stringify(jres));
+        res.end();
+    }
 }
 
 recmapp = {
