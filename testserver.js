@@ -75,7 +75,8 @@ function res_drop (req, res) {
 function res_rand_status (req, res) {
     var sc = Math.round(Math.random() * 400 + 100);
     res.writeHead(sc, {'Content-Type': 'text/plain'});
-    res.end('Status code: ' + sc);
+    res.write('Status code: ' + sc);
+    res.end("\n" + generatedhint());
 }
 
 
@@ -117,7 +118,8 @@ function res_custom (req, res) {
 
     setTimeout(
             function() {
-                res.end('test page\nrc:' + res.statusCode);
+                res.write('test page\nrc:' + res.statusCode);
+                res.end("\n" + generatedhint());
             },
             delay);
 }
@@ -139,7 +141,7 @@ function res_index (req, res) {
             res.write("<a href=\"" + lnk+ "\">" + lnk + "</a>" + " - " + desc + "<br>\n");
         }
     }
-    res.end("\n");
+    res.end("\n\n" + generatedhint());
 }
 
 function res_log (req, res) {
@@ -154,7 +156,7 @@ function res_log (req, res) {
 
 function res_empty (req, res) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end();
+    res.end(generatedhint());
 }
 
 function res_status (req, res) {
@@ -163,7 +165,8 @@ function res_status (req, res) {
     if ('/status/data' == url_parts.pathname) {
         res.writeHead(200, {'Content-Type': 'text/plain'});
         data = LAST_LOG_REQUEST && LAST_LOG_REQUEST['data'] || "";
-        res.end(data);
+        res.write(data);
+        res.end("\n\n" + generatedhint());
     } else {
         res.writeHead(200, {'Content-Type': 'application/json'});
         jres = {
@@ -214,7 +217,8 @@ function reqmapper (req, res) {
         res.end('42');
     } else {
         res.writeHead(404, {'Content-Type': 'text/html'});
-        res.end('Page not found');
+        res.write('Page not found');
+        res.end(generatedhint());
     }
 }
 
