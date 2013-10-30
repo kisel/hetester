@@ -199,6 +199,17 @@ function res_store (req, res) {
     }
 }
 
+var loginid = 0;
+function res_login (req, res) {
+    var cookie = 'hetester=mycookie-'+(++loginid);
+    headers = {
+        'Content-Type': 'text/plain',
+        'Set-Cookie': cookie,
+    }
+    res.writeHead(200, headers);
+    res.end('OK. generated new cookie. ID:' + loginid + "\n");
+}
+
 recmapp = {
     '/' : [ res_index ],
 };
@@ -214,6 +225,7 @@ var autoreg = [
     res_log, "prints request details to console",
     res_status, "current server status",
     res_store, "allows PUT or POST request data",
+    res_login, "sets hetester cookie",
     ];
 
 for(var i = 0, l=autoreg.length; i < l; i+=2)
