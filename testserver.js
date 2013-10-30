@@ -179,6 +179,26 @@ function res_status (req, res) {
     }
 }
 
+var storage = {};
+function res_store (req, res) {
+    if (req.method == 'POST' || req.method == 'PUT') {
+        var body = "";
+        req.on('data', function (data) { body += data; });
+        req.on('end', function () {
+            storage[req.url] = body;
+        });
+    }
+
+    var val = storage[req.url];
+    if (!val) {
+        res.writeHead(404, {'Content-Type': 'text/plain'});
+        res.end("Not found");
+    } else {
+        res.writeHead(200, {'Content-Type': 'text/plain'});
+        res.end(val);
+    }
+}
+
 recmapp = {
     '/' : [ res_index ],
 };
@@ -193,6 +213,7 @@ var autoreg = [
     res_rand_status, "random HTTP status",
     res_log, "prints request details to console",
     res_status, "current server status",
+    res_store, "allows PUT or POST request data",
     ];
 
 for(var i = 0, l=autoreg.length; i < l; i+=2)
