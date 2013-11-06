@@ -237,8 +237,11 @@ for(var i = 0, l=autoreg.length; i < l; i+=2)
 }
 
 function reqmapper (req, res) {
-    if (log_enabled) {
-        console.log('Request');
+    if (log_enabled == '1') {
+        console.log('Request ' + req.url);
+    }
+    if (log_enabled == '2') {
+        log_request(req);
     }
     var url_parts = url.parse(req.url, true);
     var baseurl = '/' + url_parts.pathname.split('/')[1];
