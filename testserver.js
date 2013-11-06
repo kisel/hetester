@@ -97,6 +97,28 @@ function res_data (req, res) {
     res.end('\n');
 }
 
+function res_stream (req, res) {
+    var url_parts = url.parse(req.url, true);
+    var query = url_parts.query;
+    var duration = query.duration || 5000;
+    var interval = 100;
+    var max_count = duration / interval;
+
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.write("Possible URL query args: duration[5000]\n");
+
+    var cnt = [0];
+    function streamit() {
+        var idx = ++cnt[0];
+        res.write('\n' + idx);
+        if (idx <= max_count)
+            setTimeout(streamit, interval);
+        else
+            res.end('\n' + generatedhint());
+    };
+    setTimeout(streamit, 50);
+}
+
 function res_custom (req, res) {
     var url_parts = url.parse(req.url, true);
 
@@ -226,6 +248,7 @@ var autoreg = [
     res_status, "current server status",
     res_store, "allows PUT or POST request data",
     res_login, "sets hetester cookie",
+    res_stream, "data stream",
     ];
 
 for(var i = 0, l=autoreg.length; i < l; i+=2)
