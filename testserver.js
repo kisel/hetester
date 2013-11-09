@@ -138,6 +138,10 @@ function res_custom (req, res) {
 
     function sendheader() {
         res.writeHead(rc, {'Content-Type': 'text/plain'});
+        if (query.hdelay) {
+            res.socket.write(res._header);
+            res._headerSent = true;
+        }
     }
 
     function sendcontent() {
