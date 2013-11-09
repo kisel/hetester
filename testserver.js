@@ -126,6 +126,7 @@ function res_custom (req, res) {
     var rc = query.rc || 200;
     var delay = query.delay || 0;
     var hdelay = query.hdelay || delay;
+    var duration = query.duration || 0;
 
     if (query.log) {
         log_request(req);
@@ -140,10 +141,23 @@ function res_custom (req, res) {
     }
 
     function sendcontent() {
-        res.write("Possible URL GET args: rc[200], delay[nil], dropafter[nil]\n");
+        res.write("Possible URL GET args: rc[200], delay[nil], hdelay[=delay], duration, dropafter[nil]\n");
         res.write("path: " + Object.keys(query) + '\n');
-        res.write('test page\nrc:' + res.statusCode);
-        res.end("\n" + generatedhint());
+        res.write('test page\nrc:' + res.statusCode + '\n');
+
+        var interval = 100;
+        var max_count = duration / interval + 1;
+
+        var cnt = 0;
+        function streamit() {
+            var idx = ++cnt;
+            res.write('part ' + idx + '/' + max_count + '\n');
+            if (idx < max_count)
+                setTimeout(streamit, interval);
+            else
+                res.end('\n' + generatedhint());
+        };
+        streamit();
     }
 
     setTimeout(sendheader, hdelay);
