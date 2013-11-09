@@ -125,25 +125,29 @@ function res_custom (req, res) {
     var query = url_parts.query;
     var rc = query.rc || 200;
     var delay = query.delay || 0;
-
-    res.writeHead(rc, {'Content-Type': 'text/plain'});
-    res.write("Possible URL GET args: rc[200], delay[nil], dropafter[nil]\n");
-    res.write("path: " + Object.keys(query) + '\n');
+    var hdelay = query.hdelay || delay;
 
     if (query.log) {
         log_request(req);
     }
 
     if (query.dropafter) {
-        setTimeout( function() { res.write("dropped"); req.connection.destroy(); }, query.dropafter);
+        setTimeout( function() { req.connection.destroy(); }, query.dropafter);
     }
 
-    setTimeout(
-            function() {
-                res.write('test page\nrc:' + res.statusCode);
-                res.end("\n" + generatedhint());
-            },
-            delay);
+    function sendheader() {
+        res.writeHead(rc, {'Content-Type': 'text/plain'});
+    }
+
+    function sendcontent() {
+        res.write("Possible URL GET args: rc[200], delay[nil], dropafter[nil]\n");
+        res.write("path: " + Object.keys(query) + '\n');
+        res.write('test page\nrc:' + res.statusCode);
+        res.end("\n" + generatedhint());
+    }
+
+    setTimeout(sendheader, hdelay);
+    setTimeout(sendcontent, delay);
 }
 
 var recmapp = {}
