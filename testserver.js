@@ -332,7 +332,7 @@ console.log('Server max connections: ' + httpserver.maxConnections);
 
 var fs = require('fs');
 
-if (port_ssl && fs.existsSync(key_prefix + 'key'))
+if (port_ssl)
 {
     var https = require('https');
 
