@@ -97,6 +97,22 @@ function res_data (req, res) {
     res.end('\n');
 }
 
+uniq_test = {}
+function res_uniqtest (req, res) {
+    var key = req.url;
+    var occ = (uniq_test[key] || 0) + 1;
+    uniq_test[key] = occ;
+    console.log(req.url + ' - count ' + occ + ' total keys: ' + Object.keys(uniq_test).length);
+    if (occ > 1) {
+        res.writeHead(201, {'Content-Type': 'text/plain'});
+        var msg = 'Not uniq. occurrences ' + req.url + ' : ' + occ;
+        res.end(msg);
+        console.log(msg);
+    } else {
+        res.writeHead(200, {'Content-Type': 'text/plain'});
+    }
+}
+
 function res_stream (req, res) {
     var url_parts = url.parse(req.url, true);
     var query = url_parts.query;
@@ -271,6 +287,7 @@ var autoreg = [
     res_store, "allows PUT or POST request data",
     res_login, "sets hetester cookie",
     res_stream, "data stream",
+    res_uniqtest, "unique key test",
     ];
 
 for(var i = 0, l=autoreg.length; i < l; i+=2)
