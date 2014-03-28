@@ -110,6 +110,7 @@ function res_uniqtest (req, res) {
         console.log(msg);
     } else {
         res.writeHead(200, {'Content-Type': 'text/plain'});
+        res.end('uniq');
     }
 }
 
@@ -392,3 +393,6 @@ if (httpconnstat) {
     }, 1000);
 }
 
+    var timerId = setInterval(function() {
+        console.log(JSON.stringify(uniq_test, undefined, 2) );
+    }, 1000);

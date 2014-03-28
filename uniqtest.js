@@ -15,7 +15,7 @@ function res_uniqtest (req, res) {
     uniq_test[key] = uniq_test[key] || 0;
     ++uniq_test[key];
     res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end("hi");
+    res.end("42");
 }
 
 httpserver = http.createServer( res_uniqtest );
