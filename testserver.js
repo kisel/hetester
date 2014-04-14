@@ -325,21 +325,23 @@ httpserver = http.createServer( reqmapper )
 httpserver.listen(port, '0.0.0.0');
 ACTIVE_CONNECTIONS = 0;
 
-httpserver.on('connection', function(client) { ++ACTIVE_CONNECTIONS; client.setNoDelay();
+httpserver.on('connection', function(client) {
+    ++ACTIVE_CONNECTIONS;
+    client.setNoDelay();
 
     if (log_enabled) {
-        console.log('Connected');
+        console.log('Connected (total: ' + ACTIVE_CONNECTIONS + ')');
     }
     client.on('error', function(error) {
         //console.log('event error ' + error);
     });
 
     client.on('close', function(socket) {
+        --ACTIVE_CONNECTIONS;
         //console.log('event close');
         if (log_enabled) {
-            console.log('Disconnected');
+            console.log('Disconnected (total: ' + ACTIVE_CONNECTIONS + ')');
         }
-        --ACTIVE_CONNECTIONS;
     });
 });
 
