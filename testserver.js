@@ -9,7 +9,6 @@ var port_ssl = process.env.PORT_SSL;
 var port_autodrop = process.env.PORT_AUTODROP;
 var autodrop_mode = process.env.AUTODROP_MODE || 1;
 var drop_delay = process.env.DROP_DELAY || 0;
-var httpconnstat = process.env.HTTP_CONN_STAT;
 var log_enabled = process.env.LOG;
 var key_prefix='cert/server.'
 
@@ -392,12 +391,10 @@ if (port_autodrop)
 }
 
 
-if (httpconnstat) {
-    var timerId = setInterval(function() {
-        console.log("Active connections: " + ACTIVE_CONNECTIONS);
-    }, 1000);
-}
+var timerId = setInterval(function() {
+    console.log("Active connections: " + ACTIVE_CONNECTIONS);
+    if ( Object.keys(uniq_test).length )
+    console.log(JSON.stringify(uniq_test, undefined, 2) );
 
-    var timerId = setInterval(function() {
-        console.log(JSON.stringify(uniq_test, undefined, 2) );
-    }, 1000);
+}, 3000);
+
