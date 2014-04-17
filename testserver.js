@@ -314,6 +314,9 @@ function reqmapper (req, res) {
     } else if (req.url.indexOf('/mu-') == 0) { // mu authorization
         res.writeHead(200, {'Content-Type': 'text/plain'});
         res.end('42');
+    } else if (req.url.indexOf('/loaderio-') == 0) { // loader.io authorization
+        res.writeHead(200, {'Content-Type': 'text/plain'});
+        res.end(url_parts.pathname.split('/')[1]);
     } else {
         res.writeHead(404, {'Content-Type': 'text/html'});
         res.write('Page not found');
