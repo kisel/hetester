@@ -143,6 +143,7 @@ function res_custom (req, res) {
     var delay = query.delay || 0;
     var hdelay = query.hdelay || delay;
     var duration = query.duration || 0;
+    var headers = {'Content-Type': 'text/plain'};
 
     if (query.log) {
         log_request(req);
@@ -152,8 +153,12 @@ function res_custom (req, res) {
         setTimeout( function() { req.connection.destroy(); }, query.dropafter);
     }
 
+    if (query.setcookie) {
+        headers['SetCookie'] = query.setcookie;
+    }
+
     function sendheader() {
-        res.writeHead(rc, {'Content-Type': 'text/plain'});
+        res.writeHead(rc, headers);
         if (query.hdelay) {
             res.socket.write(res._header);
             res._headerSent = true;
@@ -161,7 +166,7 @@ function res_custom (req, res) {
     }
 
     function sendcontent() {
-        res.write("Possible URL GET args: rc[200], delay[nil], hdelay[=delay], duration, dropafter[nil]\n");
+        res.write("Possible URL GET args: rc[200], delay[nil], hdelay[=delay], duration, dropafter[nil], setcookie=cookieval\n");
         res.write("path: " + Object.keys(query) + '\n');
         res.write('test page\nrc:' + res.statusCode + '\n');
 
