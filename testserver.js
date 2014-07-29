@@ -1,6 +1,9 @@
 /** Node.js test server
  */
 
+if (process.env['NEWRELIC_LICENSE'])
+    require('newrelic');
+
 var http = require('http');
 var url  = require('url');
 var net  = require('net');
