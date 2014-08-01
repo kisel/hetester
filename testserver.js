@@ -74,8 +74,14 @@ function res_drop (req, res) {
     req.connection.destroy();
 }
 
+function randomInt (low, high) {
+    return Math.floor(Math.random() * (high - low) + low);
+}
+
 function res_rand_status (req, res) {
-    var sc = Math.round(Math.random() * 400 + 100);
+    var codes = [404, 401, 500, 200, 302];
+    var sc = codes[randomInt(0, codes.length)];
+    console.log('Status code: ' + sc);
     res.writeHead(sc, {'Content-Type': 'text/plain'});
     res.write('Status code: ' + sc);
     res.end("\n" + generatedhint());
