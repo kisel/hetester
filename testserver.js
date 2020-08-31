@@ -1,9 +1,6 @@
 /** Node.js test server
  */
 
-if (process.env['NEWRELIC_LICENSE'])
-    require('newrelic');
-
 var http = require('http');
 var url  = require('url');
 var net  = require('net');
@@ -13,7 +10,6 @@ var port_autodrop = process.env.PORT_AUTODROP;
 var autodrop_mode = process.env.AUTODROP_MODE || 1;
 var drop_delay = process.env.DROP_DELAY || 0;
 var log_enabled = process.env.LOG;
-var key_prefix='cert/server.'
 
 var LAST_LOG_REQUEST = null;
 
@@ -324,12 +320,6 @@ function reqmapper (req, res) {
     handler = recmapp[baseurl];
     if (handler) {
         return handler[0](req, res);
-    } else if (req.url.indexOf('/mu-') == 0) { // mu authorization
-        res.writeHead(200, {'Content-Type': 'text/plain'});
-        res.end('42');
-    } else if (req.url.indexOf('/loaderio-') == 0) { // loader.io authorization
-        res.writeHead(200, {'Content-Type': 'text/plain'});
-        res.end(url_parts.pathname.split('/')[1]);
     } else {
         res.writeHead(404, {'Content-Type': 'text/html'});
         res.write('Page not found');
@@ -364,21 +354,24 @@ httpserver.on('connection', function(client) {
 
 
 console.log('Server running at http://0.0.0.0:' + port + '/');
-console.log('Server max connections: ' + httpserver.maxConnections);
+console.log('Server max connections: ' + (httpserver.maxConnections || 'not set'));
 
 var fs = require('fs');
 
-if (port_ssl)
-{
+if (port_ssl) {
     var https = require('https');
+    var child_process = require('child_process');
+    var cert_dir = "/tmp/sslcert";
+    child_process.exec("./gencert.sh " + cert_dir, {shell: true}, function() {
+        var key_prefix='/tmp/sslcert/server.'
+        var options = {
+            key: fs.readFileSync(cert_dir + '/server.key'),
+            cert: fs.readFileSync(cert_dir + '/server.crt')
+        };
 
-    var options = {
-        key: fs.readFileSync(key_prefix + 'key'),
-        cert: fs.readFileSync(key_prefix + 'crt')
-    };
-
-    https.createServer(options, reqmapper).listen(port_ssl);
-    console.log('Server running at https://0.0.0.0:' + port_ssl + '/');
+        https.createServer(options, reqmapper).listen(port_ssl);
+        console.log('Server running at https://0.0.0.0:' + port_ssl + '/');
+    });
 }
 
 if (port_autodrop)
