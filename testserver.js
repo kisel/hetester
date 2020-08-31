@@ -4,6 +4,7 @@
 var http = require('http');
 var url  = require('url');
 var net  = require('net');
+var os   = require("os");
 var port = process.env.PORT || 6080;
 var port_ssl = process.env.PORT_SSL;
 var port_autodrop = process.env.PORT_AUTODROP;
@@ -20,9 +21,8 @@ process.on('uncaughtException', function(err) {
     console.log(err);
 });
 
-function generatedhint()
-{
-    return "\nPage generated at: " + new Date().getTime() + "\n";
+function generatedhint() {
+    return "\nPage generated at: " + new Date().getTime() + " on host: " + os.hostname() + " pid: " + process.pid + "\n";
 }
 
 function request_to_json(req, callback) {
