@@ -28,9 +28,10 @@ This server is mostly used as a test dummy for reverse proxy or directly by load
 Following URLs are available. To get defails on query args check corresponding URLs
 
 ```bash
-$ curl localhost:6080
-HTTP port: 6080<br>
-HTTPS port: 6443<br>
+$ curl http://localhost:80
+$ curl -k https://localhost:443
+HTTP port: 80<br>
+HTTPS port: 443<br>
 <br>
 Links:<br>
 <a href="/empty">/empty</a> - returns empty page immediatly<br>
