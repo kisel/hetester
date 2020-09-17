@@ -5,12 +5,14 @@ var http = require('http');
 var url  = require('url');
 var net  = require('net');
 var os   = require("os");
+var path = require("path");
 var port = process.env.PORT || 6080;
 var port_ssl = process.env.PORT_SSL;
 var port_autodrop = process.env.PORT_AUTODROP;
 var autodrop_mode = process.env.AUTODROP_MODE || 1;
 var drop_delay = process.env.DROP_DELAY || 0;
 var log_enabled = process.env.LOG;
+var cfg_base_url = path.join(process.env.BASE_URL || '', '/'); // ends with /
 
 var LAST_LOG_REQUEST = null;
 
@@ -230,9 +232,7 @@ function res_empty (req, res) {
 }
 
 function res_status (req, res) {
-    var url_parts = url.parse(req.url, true);
-    var baseurl = '/' + url_parts.pathname.split('/')[1];
-    if ('/status/data' == url_parts.pathname) {
+    if ('/status/data' == find_rel_mountpoint(req)) {
         res.writeHead(200, {'Content-Type': 'text/plain'});
         data = LAST_LOG_REQUEST && LAST_LOG_REQUEST['data'] || "";
         res.write(data);
@@ -300,12 +300,23 @@ var autoreg = [
     res_uniqtest, "unique key test",
     ];
 
-for(var i = 0, l=autoreg.length; i < l; i+=2)
-{
+for(var i = 0, l=autoreg.length; i < l; i+=2) {
     var func = autoreg[i];
     var desc = autoreg[i + 1];
+    var route = func.name.replace(/^res_/, '');
+    var mountpath = path.join('/', route);
 
-    recmapp[ '/' + func.name.substr(4)] = [func, desc];
+    recmapp[mountpath] = [func, desc];
+}
+
+// returns path after stripping mount path
+function find_rel_mountpoint(req) {
+    var pathname = url.parse(req.url, true).pathname;
+    var end = pathname.indexOf('/', cfg_base_url.length + 1);
+    if (end == -1) {
+        end = undefined;
+    }
+    return pathname.substr(cfg_base_url.length - 1, end);
 }
 
 function reqmapper (req, res) {
@@ -315,9 +326,7 @@ function reqmapper (req, res) {
     if (log_enabled == '2') {
         log_request(req);
     }
-    var url_parts = url.parse(req.url, true);
-    var baseurl = '/' + url_parts.pathname.split('/')[1];
-    handler = recmapp[baseurl];
+    var handler = recmapp[find_rel_mountpoint(req)];
     if (handler) {
         return handler[0](req, res);
     } else {
@@ -353,7 +362,7 @@ httpserver.on('connection', function(client) {
 
 
 
-console.log('Server running at http://0.0.0.0:' + port + '/');
+console.log('Server running at http://0.0.0.0:' + port + cfg_base_url);
 console.log('Server max connections: ' + (httpserver.maxConnections || 'not set'));
 
 var fs = require('fs');
@@ -394,7 +403,7 @@ if (port_autodrop)
     }
 
     var autodrop_server = net.createServer(drop_socket).listen(port_autodrop, function() { console.log('server bound'); });
-    console.log('Started autodrop server at 0.0.0.0:' + port_autodrop);
+    console.log('Started autodrop server at 0.0.0.0:' + port_autodrop + cfg_base_url);
 }
 
 
