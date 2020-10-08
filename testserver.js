@@ -6,8 +6,9 @@ var url  = require('url');
 var net  = require('net');
 var os   = require("os");
 var path = require("path");
+var child_process = require('child_process');
 var port = process.env.PORT || 6080;
-var port_ssl = process.env.PORT_SSL;
+var port_ssl = process.env.SSL_PORT;
 var port_autodrop = process.env.PORT_AUTODROP;
 var ssl_cert = process.env.SSL_CERT;
 var ssl_key = process.env.SSL_KEY;
@@ -389,9 +390,8 @@ function loadcert(cb) {
                 key: fs.readFileSync(ssl_key),
                 cert: fs.readFileSync(ssl_cert)
             });
-            return;
         } else {
-            return null;
+            resolve(null);
         }
     });
 }
@@ -399,14 +399,13 @@ function loadcert(cb) {
 function start_ssl_server(options) {
     https.createServer(options, reqmapper).listen(port_ssl);
     console.log('Server running at https://0.0.0.0:' + port_ssl + '/');
-});
+}
 
 if (port_ssl) {
     var https = require('https');
-    var child_process = require('child_process');
-    loadcert().
-        then((res) => res || gencert())
-        then(start_ssl_server);
+    loadcert()
+        .then((res) => res || gencert())
+        .then(start_ssl_server);
 }
 
 if (port_autodrop)
