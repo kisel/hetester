@@ -9,6 +9,8 @@ var path = require("path");
 var port = process.env.PORT || 6080;
 var port_ssl = process.env.PORT_SSL;
 var port_autodrop = process.env.PORT_AUTODROP;
+var ssl_cert = process.env.SSL_CERT;
+var ssl_key = process.env.SSL_KEY;
 var autodrop_mode = process.env.AUTODROP_MODE || 1;
 var drop_delay = process.env.DROP_DELAY || 0;
 var log_enabled = process.env.LOG;
@@ -367,20 +369,44 @@ console.log('Server max connections: ' + (httpserver.maxConnections || 'not set'
 
 var fs = require('fs');
 
+function gencert(cb) {
+    return new Promise((resolve)=>{
+        var cert_dir = "/tmp/sslcert";
+        child_process.exec("./gencert.sh " + cert_dir, {shell: true}, function() {
+            var key_prefix='/tmp/sslcert/server.'
+            resolve({
+                key: fs.readFileSync(cert_dir + '/server.key'),
+                cert: fs.readFileSync(cert_dir + '/server.crt')
+            });
+        });
+    });
+}
+
+function loadcert(cb) {
+    return new Promise((resolve) => {
+        if (ssl_key && ssl_cert) {
+            resolve({
+                key: fs.readFileSync(ssl_key),
+                cert: fs.readFileSync(ssl_cert)
+            });
+            return;
+        } else {
+            return null;
+        }
+    });
+}
+
+function start_ssl_server(options) {
+    https.createServer(options, reqmapper).listen(port_ssl);
+    console.log('Server running at https://0.0.0.0:' + port_ssl + '/');
+});
+
 if (port_ssl) {
     var https = require('https');
     var child_process = require('child_process');
-    var cert_dir = "/tmp/sslcert";
-    child_process.exec("./gencert.sh " + cert_dir, {shell: true}, function() {
-        var key_prefix='/tmp/sslcert/server.'
-        var options = {
-            key: fs.readFileSync(cert_dir + '/server.key'),
-            cert: fs.readFileSync(cert_dir + '/server.crt')
-        };
-
-        https.createServer(options, reqmapper).listen(port_ssl);
-        console.log('Server running at https://0.0.0.0:' + port_ssl + '/');
-    });
+    loadcert().
+        then((res) => res || gencert())
+        then(start_ssl_server);
 }
 
 if (port_autodrop)
