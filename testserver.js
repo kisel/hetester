@@ -209,7 +209,7 @@ function res_index (req, res) {
     for (var key in recmapp) {
         if (recmapp.hasOwnProperty(key)) {
             var val = recmapp[key];
-            var lnk = key;
+            var lnk = cfg_base_url + key;
             var desc = val[1];
             if (!desc)
                 continue;
@@ -284,6 +284,7 @@ function res_login (req, res) {
 }
 
 recmapp = {
+    '' : [ res_index ],
     '/' : [ res_index ],
 };
 
@@ -307,9 +308,8 @@ for(var i = 0, l=autoreg.length; i < l; i+=2) {
     var func = autoreg[i];
     var desc = autoreg[i + 1];
     var route = func.name.replace(/^res_/, '');
-    var mountpath = path.join('/', route);
 
-    recmapp[mountpath] = [func, desc];
+    recmapp[route] = [func, desc];
 }
 
 // returns path after stripping mount path
@@ -319,7 +319,7 @@ function find_rel_mountpoint(req) {
     if (end == -1) {
         end = undefined;
     }
-    return pathname.substr(cfg_base_url.length - 1, end);
+    return pathname.substr(cfg_base_url.length, end);
 }
 
 function reqmapper (req, res) {
@@ -334,7 +334,8 @@ function reqmapper (req, res) {
         return handler[0](req, res);
     } else {
         res.writeHead(404, {'Content-Type': 'text/html'});
-        res.write('Page not found');
+        res.write('Page not found.');
+        res.write("<a href=\"" + cfg_base_url + "\">" + 'index: ' + cfg_base_url + "</a>" + " - " + desc + "<br>\n");
         res.end(generatedhint());
     }
 }
