@@ -366,8 +366,8 @@ httpserver.on('connection', function(client) {
 
 
 
-console.log('Server running at http://0.0.0.0:' + port + cfg_base_url);
 console.log('Server max connections: ' + (httpserver.maxConnections || 'not set'));
+console.log('Server running at http://0.0.0.0:' + port + cfg_base_url);
 
 var fs = require('fs');
 
