@@ -334,8 +334,8 @@ function reqmapper (req, res) {
         return handler[0](req, res);
     } else {
         res.writeHead(404, {'Content-Type': 'text/html'});
-        res.write('Page not found.');
-        res.write("<a href=\"" + cfg_base_url + "\">" + 'index: ' + cfg_base_url + "</a>" + " - " + desc + "<br>\n");
+        res.write('Page not found.<br>\n');
+        res.write("<a href=\"" + cfg_base_url + "\"> Open index URL: " + cfg_base_url + "</a><br>\n");
         res.end(generatedhint());
     }
 }
