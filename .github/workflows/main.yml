@@ -47,6 +47,9 @@ jobs:
 
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Log into dockerhub registry
+        run: echo "${{ secrets.DOCKERHUB_PUSH_TOKEN }}" | docker login docker.io -u kisel --password-stdin
+        
       - name: Push image
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository }}
@@ -57,5 +60,5 @@ jobs:
           # Use Docker `latest` tag convention
           [ "$VERSION" == "master" ] && VERSION=latest
           echo "Building image: $IMAGE_ID:$VERSION"
-          docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 --push -t $IMAGE_ID:$VERSION .
+          docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 --push -t $IMAGE_ID:$VERSION -t docker.io/kisel/hetester:$VERSION .
 
