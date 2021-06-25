@@ -1,7 +1,6 @@
-FROM node:slim
+FROM node:alpine
 MAINTAINER Anton Kiselev <anton.kisel@gmail.com>
-RUN apt update && apt install -y openssl && rm -r /var/lib/apt /var/cache
-
+RUN apk add openssl
 COPY testserver.js gencert.sh ./
 ENV PORT 80
 ENV PORT_SSL 443
