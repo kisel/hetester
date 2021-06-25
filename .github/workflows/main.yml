@@ -2,11 +2,15 @@
 
 name: CI
 
+env:
+  IMAGE_NAME: hetester
+  
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches: [ master ]
+    tags: [ v* ]
   pull_request:
     branches: [ master ]
 
@@ -39,4 +43,18 @@ jobs:
           echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
           echo "Status:    ${{ steps.buildx.outputs.status }}"
           echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"          
+          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
+
+      - name: Log into registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+      - name: Push image
+        run: |
+          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
+          docker buildx build --push $IMAGE_ID:$VERSION .
+
